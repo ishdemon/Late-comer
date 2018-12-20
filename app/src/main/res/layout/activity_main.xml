@@ -10,6 +10,26 @@
     tools:context=".MainActivity">
 
 
+    <picker.ugurtekbas.com.Picker.Picker
+        android:id="@+id/amPicker"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:canvasColor="@android:color/black"
+        app:clockColor="#ffffff"
+        app:dialRadius="12dp"
+        app:hourFormat="false"
+        app:layout_constraintBottom_toBottomOf="@+id/fab"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:textColor="#ffffff"
+        app:trackSize="5dp" />
+
     <com.robertlevonyan.views.customfloatingactionbutton.FloatingActionButton
         android:id="@+id/fab"
         android:layout_width="wrap_content"
@@ -31,11 +51,47 @@
         app:layout_constraintStart_toStartOf="parent" />
 
 
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/orange_btn"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginEnd="50dp"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="#FF8C00"
+        app:layout_constraintBottom_toBottomOf="@+id/green_btn"
+        app:layout_constraintEnd_toStartOf="@+id/green_btn" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/green_btn"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="#3CB371"
+        app:layout_constraintBottom_toTopOf="@+id/fab"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+        android:id="@+id/red_btn"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="50dp"
+        android:scaleX="0"
+        android:scaleY="0"
+        android:src="#FF0000"
+        app:layout_constraintBottom_toBottomOf="@+id/green_btn"
+        app:layout_constraintStart_toEndOf="@+id/green_btn" />
+
     <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/animation_view3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="5dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
@@ -49,26 +105,9 @@
         app:lottie_rawRes="@raw/done" />
 
     <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/animation_view2"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
-
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:lottie_autoPlay="false"
-        app:lottie_loop="true"
-        app:lottie_rawRes="@raw/ripple_loading_animation" />
-
-    <com.airbnb.lottie.LottieAnimationView
         android:id="@+id/animation_view"
-        android:layout_width="100dp"
-        android:layout_height="100dp"
+        android:layout_width="250dp"
+        android:layout_height="250dp"
 
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
@@ -88,16 +127,18 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginEnd="20dp"
-        android:layout_marginBottom="50dp"
+        android:layout_marginBottom="24dp"
         android:fontFamily="@font/roboto"
         android:textAlignment="center"
         android:textColor="@android:color/white"
-        android:textSize="20sp"
-        app:layout_constraintBottom_toTopOf="@+id/fab"
+        android:textSize="14sp"
+        app:layout_constraintBottom_toTopOf="@+id/green_btn"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        tools:text="checked in" />
 
-    <ImageView
+    <de.hdodenhof.circleimageview.CircleImageView
         android:id="@+id/imageView"
         android:layout_width="100dp"
         android:layout_height="100dp"
@@ -122,12 +163,14 @@
 
 
     <View
+        android:id="@+id/lineView"
         android:layout_width="0dp"
         android:layout_height="2dp"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="35dp"
+        android:layout_marginTop="25dp"
         android:layout_marginEnd="16dp"
         android:background="@android:color/white"
+        android:scaleX="0"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btn_edit" />
