@@ -611,7 +611,8 @@ public class MainActivity extends Activity
 
 
         private List<String> getDataFromApi() throws IOException {
-            String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc";
+            String spreadsheetId = "1z9IKRI6jP7kVv_DD_k34wdpYSiJLp2qrB4fC4__-AsA";
+            //String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc";
             String range = "DEC'18!2:2";
             List<String> results = new ArrayList<String>();
             date = new SimpleDateFormat("d", Locale.getDefault()).format(new Date());
@@ -664,7 +665,8 @@ public class MainActivity extends Activity
                     cellValue = fetchSheetValues(spreadsheetId, cellpos);
                     if (cellValue == null) {
                         Object val = new Object();
-                        String sysTime = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(Calendar.getInstance().getTime());
+                        String sysTime = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(timepicker.getTime());
+                        Log.wtf("time", sysTime);
                         val = sysTime;
                         List<List<Object>> data = Arrays.asList(
                                 Arrays.asList(
