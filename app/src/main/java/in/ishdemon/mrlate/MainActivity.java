@@ -18,7 +18,6 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -51,8 +50,9 @@ import com.google.api.services.sheets.v4.model.ConditionValue;
 import com.google.api.services.sheets.v4.model.ConditionalFormatRule;
 import com.google.api.services.sheets.v4.model.GridRange;
 import com.google.api.services.sheets.v4.model.Request;
+import com.google.api.services.sheets.v4.model.Sheet;
+import com.google.api.services.sheets.v4.model.Spreadsheet;
 import com.google.api.services.sheets.v4.model.TextFormat;
-import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
 import com.robertlevonyan.views.customfloatingactionbutton.FloatingActionButton;
 
@@ -60,7 +60,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -69,7 +68,6 @@ import java.util.Locale;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.transition.TransitionManager;
 import de.hdodenhof.circleimageview.CircleImageView;
 import picker.ugurtekbas.com.Picker.Picker;
 import pub.devrel.easypermissions.AfterPermissionGranted;
@@ -107,11 +105,11 @@ public class MainActivity extends Activity
     private String day;
     private List<List<Object>> cellValue;
     private PeopleService peopleService;
-    private Person profile;
     private CircleImageView redbtn;
     private CircleImageView greenbtn;
     private CircleImageView orangebtn;
-    private View divider;
+    private String year;
+    private String month;
 
     /**
      * Create the main activity.
@@ -127,7 +125,7 @@ public class MainActivity extends Activity
         if (MYNAME.equals("")) {
             ShowDialog();
         }
-        divider = findViewById(R.id.lineView);
+        View divider = findViewById(R.id.lineView);
         redbtn = findViewById(R.id.red_btn);
         greenbtn = findViewById(R.id.green_btn);
         orangebtn = findViewById(R.id.orange_btn);
@@ -496,7 +494,7 @@ public class MainActivity extends Activity
         @Override
         protected Void doInBackground(Void... voids) {
             try {
-                profile = peopleService.people().get("people/me")
+                Person profile = peopleService.people().get("people/me")
                         .setPersonFields("coverPhotos")
                         .execute();
                 SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
@@ -550,6 +548,10 @@ public class MainActivity extends Activity
             }
         }
 
+        private List<Sheet> fetchSheets(String id) throws IOException {
+            Spreadsheet spreadsheet = this.mService.spreadsheets().get(id).execute();
+            return spreadsheet.getSheets();
+        }
 
         private List<List<Object>> fetchSheetValues(String id, String range) throws IOException {
             ValueRange response = this.mService.spreadsheets().values()
@@ -570,7 +572,8 @@ public class MainActivity extends Activity
                     .setStartColumnIndex(x)
                     .setEndColumnIndex(x + 1)
             );
-
+            String rule = "=EQ($" + charlist.get(x) + y + ",$" + charlist.get(x) + y + ")";
+            Log.wtf("rule", rule);
             List<Request> requests = Arrays.asList(
                     new Request().setAddConditionalFormatRule(new AddConditionalFormatRuleRequest()
                             .setRule(new ConditionalFormatRule()
@@ -579,7 +582,7 @@ public class MainActivity extends Activity
                                             .setCondition(new BooleanCondition()
                                                     .setType("CUSTOM_FORMULA")
                                                     .setValues(Collections.singletonList(
-                                                            new ConditionValue().setUserEnteredValue("=EQ($D2,$D2)")
+                                                            new ConditionValue().setUserEnteredValue(rule)
                                                     ))
                                             )
                                             .setFormat(new CellFormat().setTextFormat(
@@ -598,22 +601,22 @@ public class MainActivity extends Activity
                     .batchUpdate(spreadsheetId, body)
                     .execute();
             results.add(String.valueOf(result.getReplies().size()));
-            Log.wtf("rule", results.get(0));
         }
 
         /**
-         * Fetch a list of names and majors of students in a sample spreadsheet:
-         * https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
          *
-         * @return List of names and majors
+         * @return List of names and Dates
          * @throws IOException
          */
 
 
         private List<String> getDataFromApi() throws IOException {
-            String spreadsheetId = "1z9IKRI6jP7kVv_DD_k34wdpYSiJLp2qrB4fC4__-AsA";
-            //String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc";
-            String range = "DEC'18!2:2";
+            //String spreadsheetId = "1z9IKRI6jP7kVv_DD_k34wdpYSiJLp2qrB4fC4__-AsA";
+            String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc";
+            List<Sheet> sheets = fetchSheets(spreadsheetId);
+            String LATEST_SHEET = sheets.get(sheets.size() - 1).getProperties().getTitle();
+            String Daterange = LATEST_SHEET + "!" + "2:2";
+            String Namerange = LATEST_SHEET + "!" + "A:A";
             List<String> results = new ArrayList<String>();
             date = new SimpleDateFormat("d", Locale.getDefault()).format(new Date());
             day = new SimpleDateFormat("EEEE", Locale.getDefault()).format(new Date());
@@ -623,7 +626,7 @@ public class MainActivity extends Activity
             } else {
 
                 //Find Date
-                List<List<Object>> values = fetchSheetValues(spreadsheetId, range);
+                List<List<Object>> values = fetchSheetValues(spreadsheetId, Daterange);
                 if (values != null) {
                     for (int i = 0; i < values.get(0).size(); i++) {
                         String num = String.valueOf(values.get(0).get(i));
@@ -640,12 +643,11 @@ public class MainActivity extends Activity
                 }
 
                 //find my name
-                List<List<Object>> names = fetchSheetValues(spreadsheetId, "DEC'18!A:A");
+                List<List<Object>> names = fetchSheetValues(spreadsheetId, Namerange);
                 if (names != null) {
                     for (int i = 0; i < names.size(); i++) {
                         if (names.get(i).size() != 0) {
                             String temp_name = String.valueOf(names.get(i).get(0));
-                            Log.wtf("names", temp_name);
                             if (temp_name.toLowerCase().equals(MYNAME.toLowerCase())) {
                                 y_pos = i + 1;
                                 break;
@@ -655,31 +657,25 @@ public class MainActivity extends Activity
                     Log.wtf("Name_position", String.valueOf(y_pos));
                 }
 
-                //Sheets.Spreadsheets.Values.Update request = mService.spreadsheets().values().update(spreadsheetId, range, requestBody);
-                //new Request().setAddConditionalFormatRule().
-
 
                 if ((x_pos != -1) && (y_pos != -1)) {
-                    String cellpos = "DEC'18!" + charlist.get(x_pos) + (y_pos) + ":" + charlist.get(x_pos) + (y_pos);
+                    String cellpos = LATEST_SHEET + "!" + charlist.get(x_pos) + (y_pos) + ":" + charlist.get(x_pos) + (y_pos);
                     Log.wtf("position", cellpos);
                     cellValue = fetchSheetValues(spreadsheetId, cellpos);
                     if (cellValue == null) {
-                        Object val = new Object();
                         String sysTime = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(timepicker.getTime());
-                        Log.wtf("time", sysTime);
-                        val = sysTime;
                         List<List<Object>> data = Arrays.asList(
                                 Arrays.asList(
-                                        val
+                                        (Object) sysTime
                                 )
                                 // Additional rows ...
                         );
                         ValueRange body = new ValueRange()
                                 .setValues(data);
-                        UpdateValuesResponse result =
-                                mService.spreadsheets().values().update(spreadsheetId, cellpos, body)
-                                        .setValueInputOption("RAW")
-                                        .execute();
+
+                        mService.spreadsheets().values().update(spreadsheetId, cellpos, body)
+                                .setValueInputOption("RAW")
+                                .execute();
                         Addrule(spreadsheetId, x_pos, y_pos);
                         results.add("Great! checked-in successfully" + "\n" + "at" + " " + sysTime);
                     } else
@@ -700,12 +696,6 @@ public class MainActivity extends Activity
             timepicker.disableTouch(true);
             timepicker.setTextColor(selectedcolor);
             mOutputText.setText("");
-            TransitionManager.beginDelayedTransition(root);
-            ViewGroup.LayoutParams params2 = loader.getLayoutParams();
-            params2.width = 500;
-            params2.height = 500;
-            //doneLoader.setLayoutParams(params2);
-            //loader.setLayoutParams(params2);
 
         }
 
@@ -747,14 +737,13 @@ public class MainActivity extends Activity
                             MainActivity.REQUEST_AUTHORIZATION);
                 } else {
                     Log.wtf("error", mLastError.getMessage());
-                    mOutputText.setText(mLastError.getLocalizedMessage());
+                    mOutputText.setText(mLastError.getMessage());
                     mCallApiButton.setEnabled(true);
                 }
             } else {
                 mOutputText.setText("Request cancelled.");
             }
         }
-
 
     }
 }
