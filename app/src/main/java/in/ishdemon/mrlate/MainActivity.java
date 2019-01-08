@@ -23,8 +23,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.airbnb.lottie.LottieAnimationView;
-import com.bumptech.glide.load.resource.drawable.DrawableTransitionOptions;
-import com.bumptech.glide.request.RequestOptions;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -69,6 +67,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import de.hdodenhof.circleimageview.CircleImageView;
+import in.ishdemon.mrlate.yuga.Yuga;
+import in.ishdemon.mrlate.yuga.types.ParseException;
 import picker.ugurtekbas.com.Picker.Picker;
 import pub.devrel.easypermissions.AfterPermissionGranted;
 import pub.devrel.easypermissions.EasyPermissions;
@@ -193,8 +193,10 @@ public class MainActivity extends Activity
                 .setBackOff(new ExponentialBackOff());
         peopleService = new PeopleService.Builder(AndroidHttp.newCompatibleTransport(), JacksonFactory.getDefaultInstance(), mCredential).build();
         MYURL = prefs.getString("avatar", "");
-        if (!MYURL.equals(""))
-            GlideApp.with(MainActivity.this).load(MYURL).transition(DrawableTransitionOptions.withCrossFade()).apply(new RequestOptions().placeholder(R.drawable.ic_user)).into(profilepic);
+        if (!MYURL.equals("")) {
+            Log.wtf("url", MYURL);
+            GlideApp.with(MainActivity.this).load(MYURL).into(profilepic);
+        }
     }
 
     private void animateButtons() {
@@ -260,7 +262,6 @@ public class MainActivity extends Activity
                 .setNegativeButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialogBox, int id) {
                         // ToDo get user input here
-
                         if (!userInputDialogEditText.getEditableText().toString().equals("")) {
                             SharedPreferences.Editor editor = getSharedPreferences("storage", MODE_PRIVATE).edit();
                             MYNAME = userInputDialogEditText.getEditableText().toString();
@@ -604,17 +605,17 @@ public class MainActivity extends Activity
         }
 
         /**
-         *
          * @return List of names and Dates
          * @throws IOException
          */
 
 
-        private List<String> getDataFromApi() throws IOException {
-            //String spreadsheetId = "1z9IKRI6jP7kVv_DD_k34wdpYSiJLp2qrB4fC4__-AsA";
-            String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc";
+        private List<String> getDataFromApi() throws IOException, ParseException {
+            String spreadsheetId = "1z9IKRI6jP7kVv_DD_k34wdpYSiJLp2qrB4fC4__-AsA";
+            //String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc"; // test id
             List<Sheet> sheets = fetchSheets(spreadsheetId);
-            String LATEST_SHEET = sheets.get(sheets.size() - 1).getProperties().getTitle();
+            String LATEST_SHEET = sheets.get(0).getProperties().getTitle();
+            Log.wtf("sheet", LATEST_SHEET);
             String Daterange = LATEST_SHEET + "!" + "2:2";
             String Namerange = LATEST_SHEET + "!" + "A:A";
             List<String> results = new ArrayList<String>();
@@ -628,14 +629,14 @@ public class MainActivity extends Activity
                 //Find Date
                 List<List<Object>> values = fetchSheetValues(spreadsheetId, Daterange);
                 if (values != null) {
-                    for (int i = 0; i < values.get(0).size(); i++) {
-                        String num = String.valueOf(values.get(0).get(i));
-                        if (date.length() == 1) {
-                            if ((num.charAt(0) == date.charAt(0))) {
-                                x_pos = i;
-                                break;
-                            }
-                        } else if ((num.charAt(0) == date.charAt(0)) && (num.charAt(1) == date.charAt(1))) {
+                    for (int i = 2; i < values.get(0).size(); i++) {
+                        String dateval = String.valueOf(values.get(0).get(i)).replace("(", " ").replace(")", " ").substring(0, 4);
+                        if (!TextUtils.isDigitsOnly(dateval.substring(0, 2))) {
+                            dateval = "0" + dateval;
+                        }
+                        String num = new SimpleDateFormat("d", Locale.getDefault()).format(Yuga.parse(dateval).getDate());
+                        Log.wtf("dates", num);
+                        if (date.equals(num)) {
                             x_pos = i;
                             break;
                         }
@@ -665,14 +666,11 @@ public class MainActivity extends Activity
                     if (cellValue == null) {
                         String sysTime = new SimpleDateFormat("hh:mm a", Locale.getDefault()).format(timepicker.getTime());
                         List<List<Object>> data = Arrays.asList(
-                                Arrays.asList(
-                                        (Object) sysTime
-                                )
+                                Arrays.asList((Object) sysTime)
                                 // Additional rows ...
                         );
                         ValueRange body = new ValueRange()
                                 .setValues(data);
-
                         mService.spreadsheets().values().update(spreadsheetId, cellpos, body)
                                 .setValueInputOption("RAW")
                                 .execute();
