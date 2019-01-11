@@ -562,12 +562,12 @@ public class MainActivity extends Activity
             return values;
         }
 
-        private void Addrule(String spreadsheetId, int x, int y)
+        private void Addrule(String spreadsheetId, int id, int x, int y)
                 throws IOException {
             List<String> results = new ArrayList<String>();
             // [START sheets_conditional_formatting]
             List<GridRange> ranges = Collections.singletonList(new GridRange()
-                    .setSheetId(0)
+                    .setSheetId(id)
                     .setStartRowIndex(y - 1)
                     .setEndRowIndex(y)
                     .setStartColumnIndex(x)
@@ -615,6 +615,7 @@ public class MainActivity extends Activity
             //String spreadsheetId = "1X4UFOcMr9nI1EyNlskZ6Ywn8ZeKZg5psDubicC69QVc"; // test id
             List<Sheet> sheets = fetchSheets(spreadsheetId);
             String LATEST_SHEET = sheets.get(0).getProperties().getTitle();
+            int SHEET_ID = sheets.get(0).getProperties().getSheetId();
             Log.wtf("sheet", LATEST_SHEET);
             String Daterange = LATEST_SHEET + "!" + "2:2";
             String Namerange = LATEST_SHEET + "!" + "A:A";
@@ -672,9 +673,9 @@ public class MainActivity extends Activity
                         ValueRange body = new ValueRange()
                                 .setValues(data);
                         mService.spreadsheets().values().update(spreadsheetId, cellpos, body)
-                                .setValueInputOption("RAW")
+                                .setValueInputOption("USER_ENTERED")
                                 .execute();
-                        Addrule(spreadsheetId, x_pos, y_pos);
+                        Addrule(spreadsheetId, SHEET_ID, x_pos, y_pos);
                         results.add("Great! checked-in successfully" + "\n" + "at" + " " + sysTime);
                     } else
                         results.add("Already checked-in Today" + "\n" + "at" + " " + cellValue.get(0).get(0));
